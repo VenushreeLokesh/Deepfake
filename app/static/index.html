@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Deepfake Localisation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0f0f0f;
+      color: #f0f0f0;
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    h1 span { color: #ff4444; }
+
+    .subtitle {
+      color: #888;
+      font-size: 0.95rem;
+      margin-bottom: 40px;
+    }
+
+    /* ── Upload Box ── */
+    .upload-box {
+      border: 2px dashed #333;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 520px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+
+    .upload-box:hover, .upload-box.drag-over {
+      border-color: #ff4444;
+      background: #1a1a1a;
+    }
+
+    .upload-box input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon { font-size: 3rem; margin-bottom: 12px; }
+
+    .upload-box p {
+      color: #888;
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+
+    .upload-box .file-name {
+      margin-top: 14px;
+      font-size: 0.85rem;
+      color: #ff4444;
+      font-weight: 600;
+    }
+
+    /* ── Preview ── */
+    #preview-wrap {
+      margin-top: 20px;
+      display: none;
+    }
+
+    #preview-wrap img {
+      width: 220px;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid #333;
+    }
+
+    /* ── Button ── */
+    button#analyze-btn {
+      margin-top: 24px;
+      background: #ff4444;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 48px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: none;
+    }
+
+    button#analyze-btn:hover  { background: #cc2222; }
+    button#analyze-btn:active { transform: scale(0.97); }
+
+    /* ── Loader ── */
+    #loader {
+      display: none;
+      margin-top: 32px;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid #333;
+      border-top-color: #ff4444;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loader p { color: #888; font-size: 0.9rem; }
+
+    /* ── Results ── */
+    #results { display: none; width: 100%; max-width: 960px; margin-top: 40px; }
+
+    .verdict {
+      text-align: center;
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 24px;
+    }
+
+    .verdict.fake { background: #2a0a0a; border: 1px solid #ff4444; }
+    .verdict.real { background: #0a2a0a; border: 1px solid #44ff88; }
+
+    .verdict h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    .verdict.fake h2 { color: #ff4444; }
+    .verdict.real h2 { color: #44ff88; }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .verdict.fake .stat .value { color: #ff4444; }
+    .verdict.real .stat .value { color: #44ff88; }
+
+    .stat .label {
+      font-size: 0.78rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .weak-warning {
+      margin-top: 12px;
+      font-size: 0.82rem;
+      color: #ffaa44;
+    }
+
+    /* ── Output image ── */
+    #output-img {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #222;
+      margin-top: 8px;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    /* ── Try again ── */
+    #try-again {
+      margin-top: 28px;
+      background: transparent;
+      border: 1px solid #333;
+      color: #888;
+      border-radius: 10px;
+      padding: 10px 32px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #try-again:hover { border-color: #ff4444; color: #ff4444; }
+  </style>
+</head>
+<body>
+
+  <h1>Deepfake <span>Localisation</span></h1>
+  <p class="subtitle">Upload a face image to detect and localise deepfake manipulation</p>
+
+  <!-- Upload -->
+  <div class="upload-box" id="upload-box">
+    <input type="file" id="file-input" accept="image/png, image/jpeg" />
+    <div class="upload-icon">🖼️</div>
+    <strong>Drag & drop or click to upload</strong>
+    <p>Supported formats: JPG, PNG</p>
+    <div class="file-name" id="file-name"></div>
+  </div>
+
+  <!-- Preview -->
+  <div id="preview-wrap">
+    <img id="preview-img" src="" alt="Preview" />
+  </div>
+
+  <!-- Analyze button -->
+  <button id="analyze-btn">Analyze Image</button>
+
+  <!-- Loader -->
+  <div id="loader">
+    <div class="spinner"></div>
+    <p>Running deepfake analysis...</p>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <div class="verdict" id="verdict-box">
+      <h2 id="verdict-text"></h2>
+      <div class="stats">
+        <div class="stat">
+          <span class="value" id="conf-value"></span>
+          <span class="label">Confidence</span>
+        </div>
+        <div class="stat">
+          <span class="value" id="loc-value"></span>
+          <span class="label">Localisation Score</span>
+        </div>
+      </div>
+      <div class="weak-warning" id="weak-warning" style="display:none;">
+        ⚠️ Weak localisation detected — fallback face region used
+      </div>
+    </div>
+
+    <p class="section-title">Analysis Output</p>
+    <img id="output-img" src="" alt="Result" />
+
+    <button id="try-again">Try another image</button>
+  </div>
+
+  <script>
+    const fileInput   = document.getElementById('file-input');
+    const uploadBox   = document.getElementById('upload-box');
+    const fileName    = document.getElementById('file-name');
+    const previewWrap = document.getElementById('preview-wrap');
+    const previewImg  = document.getElementById('preview-img');
+    const analyzeBtn  = document.getElementById('analyze-btn');
+    const loader      = document.getElementById('loader');
+    const results     = document.getElementById('results');
+    const tryAgain    = document.getElementById('try-again');
+
+    let selectedFile = null;
+
+    // Drag & drop
+    uploadBox.addEventListener('dragover',  (e) => { e.preventDefault(); uploadBox.classList.add('drag-over'); });
+    uploadBox.addEventListener('dragleave', ()  => uploadBox.classList.remove('drag-over'));
+    uploadBox.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadBox.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+
+    function handleFile(file) {
+      selectedFile = file;
+      fileName.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src   = e.target.result;
+        previewWrap.style.display = 'block';
+        analyzeBtn.style.display  = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    analyzeBtn.addEventListener('click', async () => {
+      if (!selectedFile) return;
+
+      // Show loader
+      analyzeBtn.style.display  = 'none';
+      previewWrap.style.display = 'none';
+      uploadBox.style.display   = 'none';
+      loader.style.display      = 'flex';
+      results.style.display     = 'none';
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      try {
+        const response = await fetch('/predict', { method: 'POST', body: formData });
+        const data     = await response.json();
+
+        // Populate results
+        const isFake  = data.label === 'Fake';
+        const verdict = document.getElementById('verdict-box');
+        verdict.className = `verdict ${isFake ? 'fake' : 'real'}`;
+
+        document.getElementById('verdict-text').textContent = isFake ? '⚠ DEEPFAKE DETECTED' : '✓ AUTHENTIC';
+        document.getElementById('conf-value').textContent   = `${data.confidence}%`;
+        document.getElementById('loc-value').textContent    = `${data.localisation_score}%`;
+        document.getElementById('output-img').src           = `data:image/png;base64,${data.result_image}`;
+
+        const weakWarn = document.getElementById('weak-warning');
+        weakWarn.style.display = data.weak_localisation ? 'block' : 'none';
+
+        loader.style.display  = 'none';
+        results.style.display = 'block';
+
+      } catch (err) {
+        loader.style.display = 'none';
+        alert('Something went wrong. Please try again.');
+        resetUI();
+      }
+    });
+
+    tryAgain.addEventListener('click', resetUI);
+
+    function resetUI() {
+      selectedFile              = null;
+      fileInput.value           = '';
+      fileName.textContent      = '';
+      previewImg.src            = '';
+      previewWrap.style.display = 'none';
+      analyzeBtn.style.display  = 'none';
+      uploadBox.style.display   = 'block';
+      results.style.display     = 'none';
+    }
+  </script>
+</body>
+</html>

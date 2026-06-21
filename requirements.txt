@@ -5,4 +5,7 @@ numpy
 matplotlib
 scikit-learn
 grad-cam
-Pillow
+pillow
+fastapi
+uvicorn
+python-multipart
