@@ -14,7 +14,8 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
 # ── Config ────────────────────────────────────────────────────────────────
-WEIGHTS_GAN   = 'models/deepfake_classifier.pth'   # GAN faces, 96%
+WEIGHTS_GAN   = 'models/deepfake_classifier.pth'  # GAN faces, 96%
+WEIGHTS_GAN_FT = 'models/deepfake_classifier_finetuned.pth'
 WEIGHTS_CELEB = 'models/deepfake_celebdf.pth'       # video swaps, 90%
 LABELS        = {0: 'Real', 1: 'Fake'}
 THRESHOLD     = 0.6
@@ -32,6 +33,7 @@ def _load(weights_path, strip_prefix=False):
     return model
 
 gan_model   = _load(WEIGHTS_GAN,   strip_prefix=True)
+gan_model_ft  = _load(WEIGHTS_GAN_FT, strip_prefix=True)   # same strip_prefix, since it was fine-tuned from the same checkpoint
 celeb_model = _load(WEIGHTS_CELEB, strip_prefix=False)
 print(f"✅ Both models loaded on {DEVICE}")
 
@@ -53,10 +55,11 @@ def run_inference(image_bytes: bytes):
     # Ensemble prediction — average both models
     with torch.no_grad():
         probs_gan   = torch.softmax(gan_model(input_t),   dim=1)
+        probs_gan_ft = torch.softmax(gan_model_ft(input_t), dim=1)
         probs_celeb = torch.softmax(celeb_model(input_t), dim=1)
-        fake_prob_gan   = probs_gan[0, 1].item()
-        fake_prob_celeb = probs_celeb[0, 1].item()
-        fake_prob       = max(fake_prob_gan, fake_prob_celeb)
+        
+        fake_prob = max(probs_gan[0,1].item(), probs_gan_ft[0,1].item(), probs_celeb[0,1].item())
+
 
         pred = 1 if fake_prob >= 0.5 else 0
         conf = fake_prob if pred == 1 else (1 - fake_prob)
