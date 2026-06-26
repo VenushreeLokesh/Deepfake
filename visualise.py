@@ -58,7 +58,7 @@ def run_visualize(model, img_path, device, output_dir=None, true_label=None, thr
 
     loc_score = float(grayscale[binary_mask > 0].mean()) if cv2.countNonZero(binary_mask) > 0 else 0.0
 
-    fig = plt.figure(figsize=(18, 5), facecolor='#0f0f0f')
+    fig = plt.figure(figsize=(18, 5), facecolor="#d3d6f7")
     gs  = GridSpec(1, 4, figure=fig, wspace=0.05)
 
     panels = [pil_img, heatmap, binary_mask, overlay]
@@ -90,7 +90,7 @@ def run_visualize(model, img_path, device, output_dir=None, true_label=None, thr
              transform=fig.transFigure)
 
     fig.text(0.5, -0.02, os.path.basename(img_path),
-             ha='center', fontsize=9, color='#888888',
+             ha='center', fontsize=9, color="#100505",
              transform=fig.transFigure)
 
     if output_dir:
