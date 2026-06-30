@@ -15,25 +15,31 @@ An AI-powered system that **detects deepfake face images** and **localises manip
 
 ### Web interface
 
-Upload a face image, run analysis, and view detection results with confidence and localisation scores.
-
 ![Web UI](docs/images/web-ui.png)
 
-### Analysis output
+### Upload & analyze
 
-The system returns a four-panel visualisation: original image, EigenCAM heatmap, binary mask, and localisation overlay.
+Select a face image and click **Analyze Image**.
 
-![Analysis output](docs/images/analysis-output.png)
+![Upload preview](docs/images/upload-preview.png)
 
-### Demo walkthrough
+### Deepfake detected
+
+The model flags manipulated images with confidence and localisation scores, plus a four-panel visualisation (original, EigenCAM heatmap, binary mask, overlay).
+
+![Deepfake detected](docs/images/deepfake-detected.png)
+
+### Authentic image
+
+Real images are classified as authentic with a high confidence score and no localised artifact region.
+
+![Authentic image](docs/images/authentic-image.png)
+
+### Quick start
 
 1. Start the server: `python -m app.main`
 2. Open **http://localhost:8000**
-3. Upload a JPG or PNG face image
-4. Click **Analyze Image**
-5. Review the verdict, confidence, localisation score, and heatmap output
-
-> **Tip:** Add your own screenshots to `docs/images/` as `web-ui.png` and `analysis-output.png` so they render on GitHub.
+3. Upload a JPG or PNG face image and click **Analyze Image**
 
 ---
 
