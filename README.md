@@ -2,7 +2,7 @@
 
 An AI-powered system that **detects deepfake face images** and **localises manipulated regions** using an ensemble of EfficientNet-B0 classifiers and EigenCAM explainability. Includes a FastAPI backend and a modern web UI for drag-and-drop analysis.
 
-**Repository:** [github.com/Venushree-l/Deepfake](https://github.com/Venushree-l/Deepfake)
+**Repository:** [github.com/VenushreeLokesh/Deepfake](https://github.com/VenushreeLokesh/Deepfake)
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
@@ -137,7 +137,7 @@ The inference pipeline loads three model checkpoints from the `models/` director
 
 ```bash
 # Clone the repository
-git clone https://github.com/Venushree-l/Deepfake.git
+git clone https://github.com/VenushreeLokesh/Deepfake.git
 cd Deepfake
 
 # Create and activate a virtual environment
@@ -250,7 +250,7 @@ python scrape_tpdne.py --count 300 --out data/tpdne_fakes
 ## Author
 
 **Venushree L**  
-GitHub: [@Venushree-l](https://github.com/Venushree-l)
+GitHub: [@VenushreeLokesh](https://github.com/VenushreeLokesh)
 
 ---
 
