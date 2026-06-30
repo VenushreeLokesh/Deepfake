@@ -4,51 +4,214 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Deepfake Localisation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-deep: #e8f4fd;
+      --bg-card: rgba(255, 255, 255, 0.82);
+      --border: rgba(37, 99, 235, 0.12);
+      --border-hover: rgba(37, 99, 235, 0.45);
+      --text: #0f2744;
+      --text-muted: #5b7a9d;
+      --accent: #2563eb;
+      --accent-light: #3b82f6;
+      --accent-glow: rgba(37, 99, 235, 0.2);
+      --danger: #e11d48;
+      --danger-glow: rgba(225, 29, 72, 0.12);
+      --success: #059669;
+      --success-glow: rgba(5, 150, 105, 0.12);
+      --warning: #d97706;
+      --radius: 20px;
+      --radius-sm: 12px;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: #0f0f0f;
-      color: #f0f0f0;
-      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text);
+      font-family: 'Outfit', system-ui, sans-serif;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ── Ambient background ── */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .bg-layer::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 15% -5%, rgba(56, 189, 248, 0.35), transparent),
+        radial-gradient(ellipse 65% 55% at 90% 5%, rgba(59, 130, 246, 0.25), transparent),
+        radial-gradient(ellipse 55% 45% at 50% 100%, rgba(14, 165, 233, 0.2), transparent),
+        linear-gradient(180deg, #dbeafe 0%, #e8f4fd 40%, #f0f9ff 100%);
+    }
+
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(37, 99, 235, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 99, 235, 0.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent);
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: float 12s ease-in-out infinite;
+    }
+
+    .orb-1 { width: 400px; height: 400px; background: rgba(56, 189, 248, 0.35); top: -100px; left: -100px; }
+    .orb-2 { width: 300px; height: 300px; background: rgba(59, 130, 246, 0.28); top: 20%; right: -80px; animation-delay: -4s; }
+    .orb-3 { width: 350px; height: 350px; background: rgba(14, 165, 233, 0.25); bottom: -50px; left: 30%; animation-delay: -8s; }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(20px, -20px) scale(1.05); }
+      66% { transform: translate(-15px, 15px) scale(0.95); }
+    }
+
+    /* ── Layout ── */
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .badge {
+      display: inline-flex;
       align-items: center;
-      padding: 40px 20px;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(37, 99, 235, 0.1);
+      border: 1px solid rgba(37, 99, 235, 0.25);
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #1d4ed8;
+      margin-bottom: 20px;
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      background: #2563eb;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(37, 99, 235, 0.6);
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.85); }
     }
 
     h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 14px;
     }
 
-    h1 span { color: #ff4444; }
+    h1 .gradient {
+      background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 50%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
     .subtitle {
-      color: #888;
-      font-size: 0.95rem;
-      margin-bottom: 40px;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      font-weight: 400;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
     }
 
-    /* ── Upload Box ── */
+    .features {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .feature-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+    }
+
+    .feature-pill svg { opacity: 0.7; }
+
+    /* ── Main card ── */
+    .main-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: var(--radius);
+      padding: 36px;
+      box-shadow: 0 8px 40px rgba(37, 99, 235, 0.12), 0 2px 12px rgba(37, 99, 235, 0.06);
+      animation: fadeUp 0.7s ease 0.1s both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Upload ── */
     .upload-box {
-      border: 2px dashed #333;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 520px;
-      padding: 48px 24px;
+      border: 2px dashed rgba(37, 99, 235, 0.25);
+      border-radius: var(--radius-sm);
+      padding: 56px 32px;
       text-align: center;
       cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
+      transition: all 0.3s ease;
       position: relative;
+      background: rgba(239, 246, 255, 0.6);
     }
 
-    .upload-box:hover, .upload-box.drag-over {
-      border-color: #ff4444;
-      background: #1a1a1a;
+    .upload-box:hover,
+    .upload-box.drag-over {
+      border-color: var(--accent);
+      background: rgba(219, 234, 254, 0.8);
+      box-shadow: 0 0 40px var(--accent-glow), inset 0 0 40px rgba(37, 99, 235, 0.04);
+      transform: translateY(-2px);
     }
 
     .upload-box input[type="file"] {
@@ -60,218 +223,532 @@
       height: 100%;
     }
 
-    .upload-icon { font-size: 3rem; margin-bottom: 12px; }
+    .upload-icon-wrap {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(14, 165, 233, 0.2));
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(37, 99, 235, 0.2);
+    }
+
+    .upload-box strong {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
 
     .upload-box p {
-      color: #888;
+      color: var(--text-muted);
       font-size: 0.9rem;
-      margin-top: 8px;
     }
 
     .upload-box .file-name {
-      margin-top: 14px;
-      font-size: 0.85rem;
-      color: #ff4444;
-      font-weight: 600;
+      margin-top: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(37, 99, 235, 0.1);
+      border-radius: 100px;
+      font-size: 0.82rem;
+      color: #1d4ed8;
+      font-weight: 500;
     }
+
+    .file-name:empty { display: none !important; }
 
     /* ── Preview ── */
     #preview-wrap {
-      margin-top: 20px;
+      margin-top: 28px;
       display: none;
+      text-align: center;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .preview-frame {
+      display: inline-block;
+      position: relative;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.18);
+    }
+
+    .preview-frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-sm);
+      border: 2px solid rgba(37, 99, 235, 0.35);
+      pointer-events: none;
+      z-index: 1;
     }
 
     #preview-wrap img {
-      width: 220px;
-      height: 220px;
+      width: 240px;
+      height: 240px;
       object-fit: cover;
-      border-radius: 12px;
-      border: 2px solid #333;
+      display: block;
     }
 
-    /* ── Button ── */
+    .preview-label {
+      margin-top: 12px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Buttons ── */
     button#analyze-btn {
-      margin-top: 24px;
-      background: #ff4444;
+      margin-top: 28px;
+      width: 100%;
+      background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
       color: white;
       border: none;
-      border-radius: 10px;
-      padding: 14px 48px;
+      border-radius: var(--radius-sm);
+      padding: 16px 32px;
+      font-family: inherit;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
+      transition: all 0.25s ease;
       display: none;
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 0.02em;
     }
 
-    button#analyze-btn:hover  { background: #cc2222; }
-    button#analyze-btn:active { transform: scale(0.97); }
+    button#analyze-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    button#analyze-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(37, 99, 235, 0.35);
+    }
+
+    button#analyze-btn:hover::before { opacity: 1; }
+    button#analyze-btn:active { transform: translateY(0); }
 
     /* ── Loader ── */
     #loader {
       display: none;
-      margin-top: 32px;
+      margin-top: 40px;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 20px;
+      animation: fadeUp 0.4s ease both;
     }
 
-    .spinner {
-      width: 48px; height: 48px;
-      border: 4px solid #333;
-      border-top-color: #ff4444;
+    .scan-container {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+
+    .scan-ring {
+      position: absolute;
+      inset: 0;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      border: 3px solid rgba(37, 99, 235, 0.15);
+    }
+
+    .scan-ring.active {
+      border-top-color: var(--accent);
+      animation: spin 1s linear infinite;
+    }
+
+    .scan-ring:nth-child(2) {
+      inset: 12px;
+      border-top-color: #0ea5e9;
+      animation-duration: 1.5s;
+      animation-direction: reverse;
+    }
+
+    .scan-icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #2563eb;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    #loader p { color: #888; font-size: 0.9rem; }
+    #loader p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .loader-steps {
+      display: flex;
+      gap: 8px;
+    }
+
+    .loader-step {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(37, 99, 235, 0.25);
+      animation: stepPulse 1.4s ease infinite;
+    }
+
+    .loader-step:nth-child(2) { animation-delay: 0.2s; }
+    .loader-step:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes stepPulse {
+      0%, 80%, 100% { background: rgba(37, 99, 235, 0.25); transform: scale(1); }
+      40% { background: var(--accent); transform: scale(1.3); }
+    }
 
     /* ── Results ── */
-    #results { display: none; width: 100%; max-width: 960px; margin-top: 40px; }
+    #results {
+      display: none;
+      width: 100%;
+      margin-top: 8px;
+      animation: fadeUp 0.5s ease both;
+    }
 
     .verdict {
       text-align: center;
-      padding: 20px;
-      border-radius: 14px;
+      padding: 32px 28px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .verdict::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 1px;
+    }
+
+    .verdict.fake {
+      background: linear-gradient(180deg, rgba(254, 226, 226, 0.9), rgba(255, 241, 242, 0.7));
+      border: 1px solid rgba(225, 29, 72, 0.3);
+      box-shadow: 0 4px 24px var(--danger-glow);
+    }
+
+    .verdict.fake::before { background: linear-gradient(90deg, transparent, #e11d48, transparent); }
+
+    .verdict.real {
+      background: linear-gradient(180deg, rgba(209, 250, 229, 0.9), rgba(236, 253, 245, 0.7));
+      border: 1px solid rgba(5, 150, 105, 0.3);
+      box-shadow: 0 4px 24px var(--success-glow);
+    }
+
+    .verdict.real::before { background: linear-gradient(90deg, transparent, #059669, transparent); }
+
+    .verdict-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .verdict.fake .verdict-icon {
+      background: rgba(225, 29, 72, 0.12);
+      color: #e11d48;
+    }
+
+    .verdict.real .verdict-icon {
+      background: rgba(5, 150, 105, 0.12);
+      color: #059669;
+    }
+
+    .verdict h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
       margin-bottom: 24px;
     }
 
-    .verdict.fake { background: #2a0a0a; border: 1px solid #ff4444; }
-    .verdict.real { background: #0a2a0a; border: 1px solid #44ff88; }
-
-    .verdict h2 {
-      font-size: 1.8rem;
-      font-weight: 800;
-      letter-spacing: 2px;
-      margin-bottom: 12px;
-    }
-
-    .verdict.fake h2 { color: #ff4444; }
-    .verdict.real h2 { color: #44ff88; }
+    .verdict.fake h2 { color: #be123c; }
+    .verdict.real h2 { color: #047857; }
 
     .stats {
-      display: flex;
-      justify-content: center;
-      gap: 32px;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      max-width: 480px;
+      margin: 0 auto;
     }
 
     .stat {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 20px 16px;
+      text-align: left;
+    }
+
+    .stat .label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+      display: block;
     }
 
     .stat .value {
-      font-size: 1.5rem;
+      font-size: 1.75rem;
       font-weight: 700;
+      display: block;
+      margin-bottom: 10px;
     }
 
-    .verdict.fake .stat .value { color: #ff4444; }
-    .verdict.real .stat .value { color: #44ff88; }
+    .verdict.fake .stat .value { color: #be123c; }
+    .verdict.real .stat .value { color: #047857; }
 
-    .stat .label {
-      font-size: 0.78rem;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    .progress-bar {
+      height: 4px;
+      background: rgba(37, 99, 235, 0.1);
+      border-radius: 100px;
+      overflow: hidden;
     }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 100px;
+      width: 0;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .verdict.fake .progress-fill { background: linear-gradient(90deg, #e11d48, #f97316); }
+    .verdict.real .progress-fill { background: linear-gradient(90deg, #059669, #10b981); }
 
     .weak-warning {
-      margin-top: 12px;
+      margin-top: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: rgba(254, 243, 199, 0.8);
+      border: 1px solid rgba(217, 119, 6, 0.3);
+      border-radius: 100px;
       font-size: 0.82rem;
-      color: #ffaa44;
+      color: #b45309;
     }
 
-    /* ── Output image ── */
-    #output-img {
-      width: 100%;
-      border-radius: 12px;
-      border: 1px solid #222;
-      margin-top: 8px;
+    /* ── Output ── */
+    .output-section {
+      background: rgba(239, 246, 255, 0.6);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
     }
 
     .section-title {
-      font-size: 0.8rem;
-      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
+      letter-spacing: 0.12em;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .output-frame {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    #output-img {
+      width: 100%;
+      display: block;
     }
 
     /* ── Try again ── */
     #try-again {
       margin-top: 28px;
-      background: transparent;
-      border: 1px solid #333;
-      color: #888;
-      border-radius: 10px;
-      padding: 10px 32px;
-      font-size: 0.9rem;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      padding: 14px 32px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
-    #try-again:hover { border-color: #ff4444; color: #ff4444; }
+    #try-again:hover {
+      border-color: var(--accent);
+      color: #1d4ed8;
+      background: rgba(219, 234, 254, 0.8);
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.8rem;
+      color: rgba(91, 122, 157, 0.7);
+      animation: fadeUp 0.7s ease 0.2s both;
+    }
+
+    @media (max-width: 600px) {
+      .page { padding: 32px 16px 48px; }
+      .main-card { padding: 24px 20px; }
+      .upload-box { padding: 40px 20px; }
+      .stats { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
 
-  <h1>Deepfake <span>Localisation</span></h1>
-  <p class="subtitle">Upload a face image to detect and localise deepfake manipulation</p>
-
-  <!-- Upload -->
-  <div class="upload-box" id="upload-box">
-    <input type="file" id="file-input" accept="image/png, image/jpeg" />
-    <div class="upload-icon">🖼️</div>
-    <strong>Drag & drop or click to upload</strong>
-    <p>Supported formats: JPG, PNG</p>
-    <div class="file-name" id="file-name"></div>
+  <div class="bg-layer">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="bg-grid"></div>
   </div>
 
-  <!-- Preview -->
-  <div id="preview-wrap">
-    <img id="preview-img" src="" alt="Preview" />
-  </div>
+  <div class="page">
 
-  <!-- Analyze button -->
-  <button id="analyze-btn">Analyze Image</button>
+    <header class="header">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        AI-Powered Detection
+      </div>
+      <h1>Deepfake <span class="gradient">Localisation</span></h1>
+      <p class="subtitle">Upload a face image to detect manipulation and visualise exactly where deepfake artifacts appear.</p>
+      <div class="features">
+        <span class="feature-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Face Analysis
+        </span>
+        <span class="feature-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Real-time Results
+        </span>
+        <span class="feature-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Heatmap Overlay
+        </span>
+      </div>
+    </header>
 
-  <!-- Loader -->
-  <div id="loader">
-    <div class="spinner"></div>
-    <p>Running deepfake analysis...</p>
-  </div>
+    <div class="main-card">
 
-  <!-- Results -->
-  <div id="results">
-    <div class="verdict" id="verdict-box">
-      <h2 id="verdict-text"></h2>
-      <div class="stats">
-        <div class="stat">
-          <span class="value" id="conf-value"></span>
-          <span class="label">Confidence</span>
+      <div class="upload-box" id="upload-box">
+        <input type="file" id="file-input" accept="image/png, image/jpeg" />
+        <div class="upload-icon-wrap">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="3"/>
+            <circle cx="8.5" cy="8.5" r="1.5" fill="#2563eb" stroke="none"/>
+            <path d="M21 15l-5-5L5 21"/>
+          </svg>
         </div>
-        <div class="stat">
-          <span class="value" id="loc-value"></span>
-          <span class="label">Localisation Score</span>
+        <strong>Drag & drop or click to upload</strong>
+        <p>JPG or PNG &middot; Face images work best</p>
+        <div class="file-name" id="file-name"></div>
+      </div>
+
+      <div id="preview-wrap">
+        <div class="preview-frame">
+          <img id="preview-img" src="" alt="Preview" />
+        </div>
+        <p class="preview-label">Selected Image</p>
+      </div>
+
+      <button id="analyze-btn">
+        Analyze Image
+      </button>
+
+      <div id="loader">
+        <div class="scan-container">
+          <div class="scan-ring active"></div>
+          <div class="scan-ring active"></div>
+          <div class="scan-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 6a6 6 0 0 1 6 6"/><circle cx="12" cy="12" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+        </div>
+        <p>Running deepfake analysis&hellip;</p>
+        <div class="loader-steps">
+          <span class="loader-step"></span>
+          <span class="loader-step"></span>
+          <span class="loader-step"></span>
         </div>
       </div>
-      <div class="weak-warning" id="weak-warning" style="display:none;">
-        ⚠️ Weak localisation detected — fallback face region used
+
+      <div id="results">
+        <div class="verdict" id="verdict-box">
+          <div class="verdict-icon" id="verdict-icon"></div>
+          <h2 id="verdict-text"></h2>
+          <div class="stats">
+            <div class="stat">
+              <span class="label">Confidence</span>
+              <span class="value" id="conf-value"></span>
+              <div class="progress-bar"><div class="progress-fill" id="conf-bar"></div></div>
+            </div>
+            <div class="stat">
+              <span class="label">Localisation Score</span>
+              <span class="value" id="loc-value"></span>
+              <div class="progress-bar"><div class="progress-fill" id="loc-bar"></div></div>
+            </div>
+          </div>
+          <div class="weak-warning" id="weak-warning" style="display:none;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Weak localisation detected — fallback face region used
+          </div>
+        </div>
+
+        <div class="output-section">
+          <p class="section-title">Analysis Output</p>
+          <div class="output-frame">
+            <img id="output-img" src="" alt="Result" />
+          </div>
+        </div>
+
+        <button id="try-again">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          Try another image
+        </button>
       </div>
+
     </div>
 
-    <p class="section-title">Analysis Output</p>
-    <img id="output-img" src="" alt="Result" />
+    <p class="footer">Powered by deep learning &middot; Grad-CAM localisation</p>
 
-    <button id="try-again">Try another image</button>
   </div>
 
   <script>
@@ -285,9 +762,11 @@
     const results     = document.getElementById('results');
     const tryAgain    = document.getElementById('try-again');
 
+    const FAKE_ICON = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+    const REAL_ICON = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+
     let selectedFile = null;
 
-    // Drag & drop
     uploadBox.addEventListener('dragover',  (e) => { e.preventDefault(); uploadBox.classList.add('drag-over'); });
     uploadBox.addEventListener('dragleave', ()  => uploadBox.classList.remove('drag-over'));
     uploadBox.addEventListener('drop', (e) => {
@@ -306,9 +785,9 @@
       fileName.textContent = file.name;
       const reader = new FileReader();
       reader.onload = (e) => {
-        previewImg.src   = e.target.result;
+        previewImg.src = e.target.result;
         previewWrap.style.display = 'block';
-        analyzeBtn.style.display  = 'block';
+        analyzeBtn.style.display = 'block';
       };
       reader.readAsDataURL(file);
     }
@@ -316,7 +795,6 @@
     analyzeBtn.addEventListener('click', async () => {
       if (!selectedFile) return;
 
-      // Show loader
       analyzeBtn.style.display  = 'none';
       previewWrap.style.display = 'none';
       uploadBox.style.display   = 'none';
@@ -330,21 +808,30 @@
         const response = await fetch('/predict', { method: 'POST', body: formData });
         const data     = await response.json();
 
-        // Populate results
         const isFake  = data.label === 'Fake';
         const verdict = document.getElementById('verdict-box');
         verdict.className = `verdict ${isFake ? 'fake' : 'real'}`;
 
-        document.getElementById('verdict-text').textContent = isFake ? '⚠ DEEPFAKE DETECTED' : '✓ AUTHENTIC';
-        document.getElementById('conf-value').textContent   = `${data.confidence}%`;
-        document.getElementById('loc-value').textContent    = `${data.localisation_score}%`;
-        document.getElementById('output-img').src           = `data:image/png;base64,${data.result_image}`;
+        document.getElementById('verdict-icon').innerHTML = isFake ? FAKE_ICON : REAL_ICON;
+        document.getElementById('verdict-text').textContent = isFake ? 'DEEPFAKE DETECTED' : 'AUTHENTIC IMAGE';
+        document.getElementById('conf-value').textContent = `${data.confidence}%`;
+        document.getElementById('loc-value').textContent  = `${data.localisation_score}%`;
+        document.getElementById('output-img').src         = `data:image/png;base64,${data.result_image}`;
 
-        const weakWarn = document.getElementById('weak-warning');
-        weakWarn.style.display = data.weak_localisation ? 'block' : 'none';
+        const confBar = document.getElementById('conf-bar');
+        const locBar  = document.getElementById('loc-bar');
+        confBar.style.width = '0';
+        locBar.style.width  = '0';
+
+        document.getElementById('weak-warning').style.display = data.weak_localisation ? 'inline-flex' : 'none';
 
         loader.style.display  = 'none';
         results.style.display = 'block';
+
+        requestAnimationFrame(() => {
+          confBar.style.width = `${data.confidence}%`;
+          locBar.style.width  = `${data.localisation_score}%`;
+        });
 
       } catch (err) {
         loader.style.display = 'none';
@@ -364,6 +851,8 @@
       analyzeBtn.style.display  = 'none';
       uploadBox.style.display   = 'block';
       results.style.display     = 'none';
+      document.getElementById('conf-bar').style.width = '0';
+      document.getElementById('loc-bar').style.width  = '0';
     }
   </script>
 </body>
